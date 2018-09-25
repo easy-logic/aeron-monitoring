@@ -1,0 +1,4 @@
+rootProject.name = 'aeron-monitoring'
+
+include 'core'
+include 'http'
