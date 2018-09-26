@@ -1,7 +1,7 @@
+### Gradle ###
 .gradle
 **/build/
 !gradle/wrapper/gradle-wrapper.jar
-
 
 ### IntelliJ IDEA ###
 .idea
@@ -10,3 +10,11 @@
 *.ipr
 /out/
 
+### Eclipse ###
+.project
+.settings/
+.classpath
+bin/
+
+### Misc ###
+*.swp

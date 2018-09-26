@@ -1,0 +1,70 @@
+allprojects {
+    group = artifact_group
+    version = artifact_version
+}
+
+subprojects {
+    buildscript {
+        ext {
+            aeronVersion = '1.11.2'
+            junitVersion = '5.3.1'
+            checkstyleVersion = '8.12'
+        }
+
+        repositories {
+            mavenCentral()
+            mavenLocal()
+            maven { 
+                url "https://plugins.gradle.org/m2/"
+            } 
+        }
+    }
+
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+    apply plugin: 'checkstyle'
+    apply plugin: 'pmd'
+    apply plugin: 'maven-publish'
+    
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        checkstyle "com.puppycrawl.tools:checkstyle:$checkstyleVersion"
+    }
+
+    checkstyle {
+        toolVersion = "$checkstyleVersion"
+        sourceSets = [sourceSets.main]
+        configFile = rootProject.file('config/checkstyle/checkstyle.xml');
+        showViolations = true
+        ignoreFailures = true
+    }
+
+    checkstyleTest {
+        enabled = true
+    }
+
+    tasks.withType(Checkstyle) {
+        reports {
+            xml.enabled  = true
+            html.enabled = true
+            html.destination file("$project.buildDir/reports/checkstyle/checkstyle.html")
+            xml.destination  file("$project.buildDir/reports/checkstyle/checkstyle.xml")
+        }
+    }
+
+    pmd {
+        ignoreFailures = true
+        sourceSets = [sourceSets.main]
+        reportsDir = file("$project.buildDir/reports/pmd")
+        consoleOutput = true
+    }
+}
+
+defaultTasks 'clean', 'build'

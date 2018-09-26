@@ -1,17 +1,42 @@
 package io.aeron.monitoring;
 
+import io.aeron.driver.status.SystemCounterDescriptor;
+import io.aeron.monitoring.model.ChannelInfo;
 import io.aeron.monitoring.model.CncSnapshot;
 import io.aeron.monitoring.model.CounterValue;
+import io.aeron.monitoring.model.StreamInfo;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static io.aeron.driver.status.SystemCounterDescriptor.BYTES_RECEIVED;
+import static io.aeron.driver.status.SystemCounterDescriptor.BYTES_SENT;
+import static io.aeron.driver.status.SystemCounterDescriptor.CONDUCTOR_PROXY_FAILS;
+import static io.aeron.driver.status.SystemCounterDescriptor.CONTROLLABLE_IDLE_STRATEGY;
+import static io.aeron.driver.status.SystemCounterDescriptor.ERRORS;
+import static io.aeron.driver.status.SystemCounterDescriptor.FLOW_CONTROL_OVER_RUNS;
+import static io.aeron.driver.status.SystemCounterDescriptor.FLOW_CONTROL_UNDER_RUNS;
+import static io.aeron.driver.status.SystemCounterDescriptor.FREE_FAILS;
+import static io.aeron.driver.status.SystemCounterDescriptor.HEARTBEATS_RECEIVED;
+import static io.aeron.driver.status.SystemCounterDescriptor.HEARTBEATS_SENT;
+import static io.aeron.driver.status.SystemCounterDescriptor.INVALID_PACKETS;
+import static io.aeron.driver.status.SystemCounterDescriptor.LOSS_GAP_FILLS;
+import static io.aeron.driver.status.SystemCounterDescriptor.NAK_MESSAGES_RECEIVED;
+import static io.aeron.driver.status.SystemCounterDescriptor.NAK_MESSAGES_SENT;
+import static io.aeron.driver.status.SystemCounterDescriptor.POSSIBLE_TTL_ASYMMETRY;
+import static io.aeron.driver.status.SystemCounterDescriptor.RECEIVER_PROXY_FAILS;
+import static io.aeron.driver.status.SystemCounterDescriptor.RETRANSMITS_SENT;
+import static io.aeron.driver.status.SystemCounterDescriptor.SENDER_FLOW_CONTROL_LIMITS;
+import static io.aeron.driver.status.SystemCounterDescriptor.SENDER_PROXY_FAILS;
+import static io.aeron.driver.status.SystemCounterDescriptor.SHORT_SENDS;
+import static io.aeron.driver.status.SystemCounterDescriptor.STATUS_MESSAGES_RECEIVED;
+import static io.aeron.driver.status.SystemCounterDescriptor.STATUS_MESSAGES_SENT;
+import static io.aeron.driver.status.SystemCounterDescriptor.UNBLOCKED_COMMANDS;
+import static io.aeron.driver.status.SystemCounterDescriptor.UNBLOCKED_PUBLICATIONS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * @author Ivan Zemlyanskiy
- */
 class CncReaderTest {
 
 
@@ -68,57 +93,75 @@ class CncReaderTest {
     @Test
     void read() {
         String testCncFilePath = getClass().getClassLoader().getResource("cnc.dat").getFile();
-        CncReader reader = new CncReader(new File(testCncFilePath));
-        CncSnapshot snapshot = reader.read();
+        CncReader reader = new CncReader();
+        CncSnapshot snapshot = reader.read(new File(testCncFilePath));
         assertEquals(14, snapshot.getVersion());
         assertEquals(8192, snapshot.getMaxCounterId());
 
-        Map<Integer, CounterValue> counters = snapshot.getCounters();
-        assertEquals(604_845_376L, counters.get(0).getValue());
-        assertEquals(604_845_376L, counters.get(1).getValue());
-        assertEquals(0L, counters.get(2).getValue());
-        assertEquals(0L, counters.get(3).getValue());
-        assertEquals(0L, counters.get(4).getValue());
-        assertEquals(0L, counters.get(5).getValue());
-        assertEquals(0L, counters.get(6).getValue());
-        assertEquals(17_937L, counters.get(7).getValue());
-        assertEquals(17_937L, counters.get(8).getValue());
-        assertEquals(1_382L, counters.get(9).getValue());
-        assertEquals(1_382L, counters.get(10).getValue());
-        assertEquals(0L, counters.get(11).getValue());
-        assertEquals(0L, counters.get(12).getValue());
-        assertEquals(0L, counters.get(13).getValue());
-        assertEquals(0L, counters.get(14).getValue());
-        assertEquals(0L, counters.get(15).getValue());
-        assertEquals(0L, counters.get(16).getValue());
-        assertEquals(0L, counters.get(17).getValue());
-        assertEquals(2L, counters.get(18).getValue());
-        assertEquals(0L, counters.get(19).getValue());
-        assertEquals(0L, counters.get(20).getValue());
-        assertEquals(0L, counters.get(21).getValue());
-        assertEquals(0L, counters.get(22).getValue());
-        assertEquals(0L, counters.get(23).getValue());
-        assertEquals(1L, counters.get(24).getValue());
-        assertEquals(302_401_152L, counters.get(25).getValue());
-        assertEquals(302_532_224L, counters.get(26).getValue());
-        assertEquals(302_401_152L, counters.get(27).getValue());
-        assertEquals(310_789_760L, counters.get(28).getValue());
-        assertEquals(1_537_918_205_061L, counters.get(29).getValue());
-        assertEquals(1L, counters.get(30).getValue());
-        assertEquals(302_401_152L, counters.get(31).getValue());
-        assertEquals(302_532_224L, counters.get(32).getValue());
-        assertEquals(302_401_152L, counters.get(33).getValue());
-        assertEquals(310_789_760L, counters.get(34).getValue());
-        assertEquals(1_537_918_204_917L, counters.get(35).getValue());
-        assertEquals(1L, counters.get(36).getValue());
-        assertEquals(1L, counters.get(37).getValue());
-        assertEquals(302_401_152L, counters.get(38).getValue());
-        assertEquals(302_401_152L, counters.get(39).getValue());
-        assertEquals(302_401_152L, counters.get(40).getValue());
-        assertEquals(302_401_152L, counters.get(41).getValue());
-        assertEquals(302_401_152L, counters.get(42).getValue());
-        assertEquals(302_401_152L, counters.get(43).getValue());
+        final Map<SystemCounterDescriptor, CounterValue> counters = snapshot.getCounters();
+        assertEquals(604_845_376L, counters.get(BYTES_SENT).getValue());
+        assertEquals(604_845_376L, counters.get(BYTES_RECEIVED).getValue());
+        assertEquals(0L, counters.get(RECEIVER_PROXY_FAILS).getValue());
+        assertEquals(0L, counters.get(SENDER_PROXY_FAILS).getValue());
+        assertEquals(0L, counters.get(CONDUCTOR_PROXY_FAILS).getValue());
+        assertEquals(0L, counters.get(NAK_MESSAGES_SENT).getValue());
+        assertEquals(0L, counters.get(NAK_MESSAGES_RECEIVED).getValue());
+        assertEquals(17_937L, counters.get(STATUS_MESSAGES_SENT).getValue());
+        assertEquals(17_937L, counters.get(STATUS_MESSAGES_RECEIVED).getValue());
+        assertEquals(1_382L, counters.get(HEARTBEATS_SENT).getValue());
+        assertEquals(1_382L, counters.get(HEARTBEATS_RECEIVED).getValue());
+        assertEquals(0L, counters.get(RETRANSMITS_SENT).getValue());
+        assertEquals(0L, counters.get(FLOW_CONTROL_UNDER_RUNS).getValue());
+        assertEquals(0L, counters.get(FLOW_CONTROL_OVER_RUNS).getValue());
+        assertEquals(0L, counters.get(INVALID_PACKETS).getValue());
+        assertEquals(0L, counters.get(ERRORS).getValue());
+        assertEquals(0L, counters.get(SHORT_SENDS).getValue());
+        assertEquals(0L, counters.get(FREE_FAILS).getValue());
+        assertEquals(2L, counters.get(SENDER_FLOW_CONTROL_LIMITS).getValue());
+        assertEquals(0L, counters.get(UNBLOCKED_PUBLICATIONS).getValue());
+        assertEquals(0L, counters.get(UNBLOCKED_COMMANDS).getValue());
+        assertEquals(0L, counters.get(POSSIBLE_TTL_ASYMMETRY).getValue());
+        assertEquals(0L, counters.get(CONTROLLABLE_IDLE_STRATEGY).getValue());
+        assertEquals(0L, counters.get(LOSS_GAP_FILLS).getValue());
+
+        final Map<String, ChannelInfo> channels = snapshot.getChannels();
+        assertEquals(2, channels.size());
+        final ChannelInfo channel1 = channels.get("aeron:udp?endpoint=localhost:40123");
+        assertTrue(channel1.getReceiver().getStatus());
+        assertEquals(302_401_152L, channel1.getReceiver().getPosition());
+        assertEquals(302_401_152L, channel1.getReceiver().getHighWaterMark());
+        assertTrue(channel1.getSender().getStatus());
+        assertEquals(302_401_152L, channel1.getSender().getPosition());
+        assertEquals(302_532_224L, channel1.getSender().getLimit());
+        assertEquals(1, channel1.getStreams().size());
+        final StreamInfo streamInfo1 = channel1.getStreams().get(10);
+        assertEquals(10, streamInfo1.getStreamId());
+        assertEquals(302_401_152L, streamInfo1.getPublication().getPosition());
+        assertEquals(310_789_760L, streamInfo1.getPublication().getLimit());
+        assertEquals(302_401_152L, streamInfo1.getSubscriptions().get(5).getPosition());
+
+        final ChannelInfo channel2 = channels.get("aeron:udp?endpoint=localhost:40124");
+        assertTrue(channel2.getReceiver().getStatus());
+        assertEquals(302_401_152L, channel2.getReceiver().getPosition());
+        assertEquals(302_401_152L, channel2.getReceiver().getHighWaterMark());
+        assertTrue(channel2.getSender().getStatus());
+        assertEquals(302_401_152L, channel2.getSender().getPosition());
+        assertEquals(302_532_224L, channel2.getSender().getLimit());
+        assertEquals(1, channel2.getStreams().size());
+        final StreamInfo streamInfo2 = channel2.getStreams().get(10);
+        assertEquals(10, streamInfo2.getStreamId());
+        assertEquals(302_401_152L, streamInfo2.getPublication().getPosition());
+        assertEquals(310_789_760L, streamInfo2.getPublication().getLimit());
+        assertEquals(302_401_152L, streamInfo2.getSubscriptions().get(4).getPosition());
 
 
+    }
+
+    @Test
+    void shouldParseSampleLabel() {
+        assertEquals(
+                "aeron:udp?endpoint=localhost:40123",
+                CncReader.extractUriFromLabel(
+                        "snd-pos: 2 1707220681 10 aeron:udp?endpoint=localhost:40123"));
     }
 }

@@ -1,4 +1,3 @@
-rootProject.name = 'aeron-monitoring'
-
-include 'core'
-include 'http'
+rootProject.name = 'aeron-monitor'
+include 'core', 'web'
+enableFeaturePreview('STABLE_PUBLISHING')
