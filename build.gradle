@@ -1,0 +1,58 @@
+allprojects {
+    group = artifact_group
+    version = artifact_version
+}
+
+subprojects {
+    buildscript {
+        ext {
+            aeronVersion = '1.11.1'
+            springBootVersion = '2.0.5.RELEASE'
+            junitVersion = '5.3.1'
+            checkstyleVersion = '8.12'
+        }
+
+        repositories {
+            mavenCentral()
+        }
+    }
+
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+    apply plugin: 'checkstyle'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        checkstyle 'com.puppycrawl.tools:checkstyle:' + checkstyleVersion
+    }
+
+    checkstyle {
+        toolVersion = '$checkstyleVersion'
+        sourceSets = [sourceSets.main]
+        configFile = rootProject.file('config/checkstyle/checkstyle.xml');
+        showViolations = true
+        ignoreFailures = true
+    }
+
+    checkstyleTest {
+        enabled = true
+    }
+
+    tasks.withType(Checkstyle) {
+        reports {
+            xml.enabled  = true
+            html.enabled = true
+            html.destination file('build/reports/checkstyle/checkstyle.html')
+            xml.destination  file('build/reports/checkstyle/checkstyle.xml')
+        }
+    }
+}
+
+defaultTasks 'build'
