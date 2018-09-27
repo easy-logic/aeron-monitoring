@@ -1,0 +1,11 @@
+dependencies {
+    compile("io.aeron:aeron-client:$aeronVersion")
+    compile("io.aeron:aeron-driver:$aeronVersion")
+
+    testCompile("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+}
+
+jar {
+    baseName = rootProject.name + '-core'
+}

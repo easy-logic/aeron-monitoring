@@ -15,9 +15,6 @@ import java.util.Map;
 
 import static io.aeron.CncFileDescriptor.*;
 
-/**
- * @author Ivan Zemlyanskiy
- */
 public class CncReader {
 
     private final int cncVersion;
@@ -46,6 +43,7 @@ public class CncReader {
     }
 
     public CncSnapshot read() {
+        /*
         Map<Integer, CounterValue> counterValues = new HashMap<>();
         counters.forEach((counterId, typeId, keyBuffer, label) -> {
             counterValues.put(
@@ -64,6 +62,8 @@ public class CncReader {
                 .maxCounterId(counters.maxCounterId())
                 .counters(counterValues)
                 .build();
+                */
+        return null;
     }
 
 
