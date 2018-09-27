@@ -7,7 +7,6 @@ subprojects {
     buildscript {
         ext {
             aeronVersion = '1.11.1'
-            springBootVersion = '2.0.5.RELEASE'
             junitVersion = '5.3.1'
             checkstyleVersion = '8.12'
         }
@@ -31,11 +30,11 @@ subprojects {
     }
 
     dependencies {
-        checkstyle 'com.puppycrawl.tools:checkstyle:' + checkstyleVersion
+        checkstyle "com.puppycrawl.tools:checkstyle:$checkstyleVersion"
     }
 
     checkstyle {
-        toolVersion = '$checkstyleVersion'
+        toolVersion = "$checkstyleVersion"
         sourceSets = [sourceSets.main]
         configFile = rootProject.file('config/checkstyle/checkstyle.xml');
         showViolations = true
@@ -50,15 +49,15 @@ subprojects {
         reports {
             xml.enabled  = true
             html.enabled = true
-            html.destination file('$project.buildDir/reports/checkstyle/checkstyle.html')
-            xml.destination  file('$project.buildDir/reports/checkstyle/checkstyle.xml')
+            html.destination file("$project.buildDir/reports/checkstyle/checkstyle.html")
+            xml.destination  file("$project.buildDir/reports/checkstyle/checkstyle.xml")
         }
     }
 
     pmd {
         ignoreFailures = true
         sourceSets = [sourceSets.main]
-        reportsDir = file('$project.buildDir/reports/pmd')
+        reportsDir = file("$project.buildDir/reports/pmd")
         consoleOutput = true
     }
 }
