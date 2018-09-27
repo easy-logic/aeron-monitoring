@@ -21,6 +21,7 @@ subprojects {
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'checkstyle'
+    apply plugin: 'pmd'
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -49,9 +50,16 @@ subprojects {
         reports {
             xml.enabled  = true
             html.enabled = true
-            html.destination file('build/reports/checkstyle/checkstyle.html')
-            xml.destination  file('build/reports/checkstyle/checkstyle.xml')
+            html.destination file('$project.buildDir/reports/checkstyle/checkstyle.html')
+            xml.destination  file('$project.buildDir/reports/checkstyle/checkstyle.xml')
         }
+    }
+
+    pmd {
+        ignoreFailures = true
+        sourceSets = [sourceSets.main]
+        reportsDir = file('$project.buildDir/reports/pmd')
+        consoleOutput = true
     }
 }
 
