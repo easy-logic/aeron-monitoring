@@ -1,58 +1,26 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
   <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
-  <link rel="stylesheet" th:href="@{/css/main.css}" href="../../css/main.css" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css" />
+  <title>[[${page_title}]]</title>
 </head>
 <body>
-
 <div id="app">
-  <v-app id="inspire">
-    <v-navigation-drawer
-      fixed
-      clipped
-      class="grey lighten-4"
-      app
-      v-model="drawer"
-    >
-      <v-list
-        dense
-        class="grey lighten-4"
-      >
-        <template v-for="(item, i) in items">
-          <v-layout
-            row
-            v-if="item.heading"
-            align-center
-            :key="i"
-          >
-            <v-flex xs6>
-              <v-subheader v-if="item.heading">
-                {{ item.heading }}
-              </v-subheader>
-            </v-flex>
-            <v-flex xs6 class="text-xs-right">
-              <v-btn small flat>edit</v-btn>
-            </v-flex>
-          </v-layout>
-          <v-divider
-            dark
-            v-else-if="item.divider"
-            class="my-3"
-            :key="i"
-          ></v-divider>
-          <v-list-tile
-            :key="i"
-            v-else
-            @click=""
-          >
+  <v-app id="aeron-monitor">
+    <v-navigation-drawer stateless fixed clipped class="grey lighten-4" app v-model="drawer" width="220">
+      <v-list dense class="grey lighten-4">
+        <template v-for="(item, i) in drawer_items">
+          <v-divider dark v-if="item.divider" class="my-3" :key="i"></v-divider>
+          <v-list-tile :key="i" v-else @click="onDrowerItem(i, item)">
             <v-list-tile-action>
               <v-icon>{{ item.icon }}</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
-              <v-list-tile-title class="grey--text">
+              <v-list-tile-title class="grey--text body-1 font-weight-black">
                 {{ item.text }}
               </v-list-tile-title>
             </v-list-tile-content>
@@ -60,68 +28,48 @@
         </template>
       </v-list>
     </v-navigation-drawer>
-    <v-toolbar color="amber" app absolute clipped-left>
+    <v-toolbar color="primary" app absolute clipped-left v-bind:height="48">
       <v-toolbar-side-icon @click.native="drawer = !drawer"></v-toolbar-side-icon>
-      <span class="title ml-3 mr-5">Example&nbsp;<span class="text">Test</span></span>
-      <v-text-field
-        solo-inverted
-        flat
-        label="Search"
-        prepend-icon="search"
-      ></v-text-field>
+      <v-toolbar-title class="white--text title">[[${toolbar_title}]]</v-toolbar-title>
       <v-spacer></v-spacer>
     </v-toolbar>
     <v-content>
-      <v-container fluid fill-height class="grey lighten-4">
-        <v-layout justify-center align-center>
-          <v-flex shrink>
-            <v-tooltip right>
-              <v-btn
-                icon
-                large
-                :href="source"
-                target="_blank"
-                slot="activator"
-              >
-                <v-icon large>code</v-icon>
-              </v-btn>
-              <span>Source</span>
-            </v-tooltip>
+      <v-container grid-list-md >
+        <v-layout row wrap>
+          <v-flex xs12>
+            <v-subheader>Counters</v-subheader>
           </v-flex>
+          <v-flex xs6>
+            <v-data-table 
+              :headers="counters.headers" 
+              :items="counters.data"
+		      class="elevation-1">
+		      <template slot="items" slot-scope="props">
+			    <td class="text-xs-right">{{ props.item.id }}</td>
+			    <td class="text-xs-left">{{ props.item.name }}</td>
+			    <td class="text-xs-right">{{ props.item.value }}</td>
+		      </template>
+            </v-data-table>
+          </v-flex>
+          <v-flex xs6></v-flex>
         </v-layout>
       </v-container>
     </v-content>
+    <v-footer class="pa-3" app>
+      <div :style="{width: '100px'}">
+        <v-select
+          :items="counters.autoUpdateList"
+          v-model.number="counters.autoUpdateTimeout"
+		  class="grey--text caption">
+        </v-select>
+      </div>
+      <v-spacer></v-spacer>
+      <div class="grey--text caption">v[[${app_version}]]</div>
+    </v-footer>
   </v-app>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
-<script>
-    new Vue({
-    	  el: '#app',
-    	  data: () => ({
-    	      drawer: null,
-    	      items: [
-    	        { icon: 'lightbulb_outline', text: 'Notes' },
-    	        { icon: 'touch_app', text: 'Reminders' },
-    	        { divider: true },
-    	        { heading: 'Labels' },
-    	        { icon: 'add', text: 'Create new label' },
-    	        { divider: true },
-    	        { icon: 'archive', text: 'Archive' },
-    	        { icon: 'delete', text: 'Trash' },
-    	        { divider: true },
-    	        { icon: 'settings', text: 'Settings' },
-    	        { icon: 'chat_bubble', text: 'Trash' },
-    	        { icon: 'help', text: 'Help' },
-    	        { icon: 'phonelink', text: 'App downloads' },
-    	        { icon: 'keyboard', text: 'Keyboard shortcuts' }
-    	      ]
-    	    }),
-    	    props: {
-    	      source: String
-    	    }
-    	})
-</script>
+<script src="/js/app.js"></script>
 </body>
 </html>
