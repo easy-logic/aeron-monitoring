@@ -1,6 +1,19 @@
 # aeron-monitoring
 
-# License (See LICENSE file for full license)
+# Build
+
+[Gradle](http://gradle.org/) is used as build system. Latest stable JDK 8 is also required to build
+the project.
+
+Clean build:
+
+```shell
+    $ git clone https://github.com/easy-logic/aeron-monitoring.git
+    $ cd aeron-monitoring
+    $ ./gradlew
+```
+
+# License 
 
 Copyright 2018 Easy Logic
 

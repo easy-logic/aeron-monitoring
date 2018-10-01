@@ -62,4 +62,4 @@ subprojects {
     }
 }
 
-defaultTasks 'build'
+defaultTasks 'clean', 'build'
