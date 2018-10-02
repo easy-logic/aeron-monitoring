@@ -12,14 +12,17 @@ plugins {
 
 dependencies {
     compile project(':core')
-    compile 'org.springframework.boot:spring-boot-starter'
-    compile 'org.springframework.boot:spring-boot-starter-web'
-    compile 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    compile 'org.springframework.boot:spring-boot-devtools'
-    testCompile 'org.springframework.boot:spring-boot-starter-test'
+    compile('org.springframework.boot:spring-boot-starter')
+    compile ('org.springframework.boot:spring-boot-starter-web') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'  
+    }
+    compile('org.springframework.boot:spring-boot-starter-jetty')
+    compile('org.springframework.boot:spring-boot-starter-thymeleaf')
+    compile('org.springframework.boot:spring-boot-devtools')
+    testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
 bootJar {
-    baseName = rootProject.name + '-web'
+    baseName = rootProject.name
     version =  artifact_version
 }

@@ -13,6 +13,12 @@ Clean build:
     $ ./gradlew
 ```
 
+# Run 
+
+```shell
+    $ java -jar aeron-monitor.jar [--port=9000]
+```
+
 # License 
 
 Copyright 2018 Easy Logic
