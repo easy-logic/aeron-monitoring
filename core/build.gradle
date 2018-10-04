@@ -9,3 +9,11 @@ dependencies {
 jar {
     baseName = rootProject.name + '-core'
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
