@@ -25,4 +25,7 @@ dependencies {
 bootJar {
     baseName = rootProject.name
     version =  artifact_version
+    manifest {
+        attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
+    }
 }

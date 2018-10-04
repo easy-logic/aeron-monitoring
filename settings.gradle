@@ -1,2 +1,3 @@
 rootProject.name = 'aeron-monitor'
 include 'core', 'web'
+enableFeaturePreview('STABLE_PUBLISHING')
