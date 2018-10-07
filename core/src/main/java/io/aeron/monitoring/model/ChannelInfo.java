@@ -1,13 +1,25 @@
 package io.aeron.monitoring.model;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+@ApiModel(description = "Contains sender's and receivers' counters and stream stats")
 public class ChannelInfo {
+
+    @ApiModelProperty("channel url")
     private final String uri;
+
+    @ApiModelProperty("Media Driver's sender statistics")
     private SenderInfo sender;
+
+    @ApiModelProperty("Media Driver's receiver statistics")
     private ReceiverInfo receiver;
+
+    @ApiModelProperty("Stream statistics of the given channel")
     private final Map<Integer, StreamInfo> streams = new HashMap<>();
 
     public ChannelInfo(final String uri) {
