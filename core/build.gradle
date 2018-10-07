@@ -1,6 +1,7 @@
 dependencies {
     compile "io.aeron:aeron-client:$aeronVersion"
     compile "io.aeron:aeron-driver:$aeronVersion"
+    compile "io.swagger:swagger-annotations:1.5.21"
 
     testCompile "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testRuntime "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
