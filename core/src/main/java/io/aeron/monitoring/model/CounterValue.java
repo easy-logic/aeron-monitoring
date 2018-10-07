@@ -1,13 +1,25 @@
 package io.aeron.monitoring.model;
 
 import io.aeron.driver.status.SystemCounterDescriptor;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Objects;
 
+@ApiModel(description = "Information about single counter including metric's name, " +
+        "human-readable label and current value")
 public class CounterValue {
+
+    @ApiModelProperty("Counter name")
     SystemCounterDescriptor descriptor;
+
+    @ApiModelProperty("")
     private final int typeId;
+
+    @ApiModelProperty("Human-readable name of the counter")
     private final String label;
+
+    @ApiModelProperty("Current value of the counter")
     private final long value;
 
     public CounterValue(
