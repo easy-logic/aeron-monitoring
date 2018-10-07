@@ -20,13 +20,22 @@ public class PluginLoaderTest {
     private PluginLoader pluginLoader;
 
     @Test(timeout = 10_000)
-    public void shouldLoadAndExecutePluginsFromClassPath() {
+    public void shouldLoadExecuteAndShutdownPluginsFromClassPath() {
         final List<Plugin> plugins = pluginLoader.getPlugins();
         assertTrue(!plugins.isEmpty());
 
         plugins.forEach(p -> {
             final TestPlugin tp = (TestPlugin) p;
-            while (!tp.isExecuted()) {
+            while (!tp.isInitialized() && !tp.isExecuted()) {
+                // NOOP
+            }
+        });
+
+        pluginLoader.shutdown();
+
+        plugins.forEach(p -> {
+            final TestPlugin tp = (TestPlugin) p;
+            while (!tp.isShutdown()) {
                 // NOOP
             }
         });
