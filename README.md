@@ -16,7 +16,7 @@ Clean build:
 # Run 
 
 ```shell
-    $ java -jar aeron-monitor.jar [--port=9000]
+    $ java -jar aeron-monitor.jar [-Dloader.path="plugins-path"] [--port=9000]
 ```
 
 # License 
