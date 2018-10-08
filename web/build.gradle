@@ -10,6 +10,10 @@ plugins {
     id "com.eriwen.gradle.js" version "2.14.1"
 }
 
+repositories {
+    mavenCentral();
+}
+
 dependencies {
     compile project(':core')
     compile('org.springframework.boot:spring-boot-starter')
@@ -19,6 +23,8 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-jetty')
     compile('org.springframework.boot:spring-boot-starter-thymeleaf')
     compile('org.springframework.boot:spring-boot-devtools')
+    compile('io.springfox:springfox-swagger2:2.9.2')
+    compile('io.springfox:springfox-swagger-ui:2.9.2')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
