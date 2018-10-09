@@ -10,10 +10,6 @@ plugins {
     id "com.eriwen.gradle.js" version "2.14.1"
 }
 
-repositories {
-    mavenCentral();
-}
-
 dependencies {
     compile project(':core')
     compile('org.springframework.boot:spring-boot-starter')
