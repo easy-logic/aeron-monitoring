@@ -98,7 +98,11 @@ public class CncReader {
                 counterValues.put(
                         SystemCounterDescriptor.get(counterId),
                         new CounterValue(
-                                SystemCounterDescriptor.get(counterId), typeId, label, value));
+                                counterId,
+                                SystemCounterDescriptor.get(counterId),
+                                typeId,
+                                label,
+                                value));
                 return;
             }
 

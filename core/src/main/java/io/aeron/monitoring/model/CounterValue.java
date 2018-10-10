@@ -10,10 +10,12 @@ import java.util.Objects;
         "human-readable label and current value")
 public class CounterValue {
 
+    private final int id;
+
     @ApiModelProperty("Counter name")
     SystemCounterDescriptor descriptor;
 
-    @ApiModelProperty("")
+    @ApiModelProperty("Type id of counter")
     private final int typeId;
 
     @ApiModelProperty("Human-readable name of the counter")
@@ -23,10 +25,11 @@ public class CounterValue {
     private final long value;
 
     public CounterValue(
-            final SystemCounterDescriptor descriptor,
+            final int id, final SystemCounterDescriptor descriptor,
             final int typeId,
             final String label,
             final long value) {
+        this.id = id;
         this.descriptor = descriptor;
         this.typeId = typeId;
         this.label = label;
