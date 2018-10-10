@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Map;
+import java.util.Set;
 
 @ApiModel(description = "Represents the entire snapshot of Aeron's CnC file")
 public class CncSnapshot {
@@ -16,7 +17,7 @@ public class CncSnapshot {
     private final int maxCounterId;
 
     @ApiModelProperty("Contains counters related to media driver entirely")
-    private final Map<SystemCounterDescriptor, CounterValue> counters;
+    private final Set<CounterValue> counters;
 
     @ApiModelProperty("Contains information related to media driver's pipes")
     private final Map<String, ChannelInfo> channels;
@@ -24,7 +25,7 @@ public class CncSnapshot {
     public CncSnapshot(
             final int version,
             final int maxCounterId,
-            final Map<SystemCounterDescriptor, CounterValue> counters,
+            final Set<CounterValue> counters,
             final Map<String, ChannelInfo> channels) {
         this.version = version;
         this.maxCounterId = maxCounterId;
@@ -40,7 +41,7 @@ public class CncSnapshot {
         return maxCounterId;
     }
 
-    public Map<SystemCounterDescriptor, CounterValue> getCounters() {
+    public Set<CounterValue> getCounters() {
         return counters;
     }
 

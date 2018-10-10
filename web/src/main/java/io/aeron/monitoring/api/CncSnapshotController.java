@@ -10,10 +10,12 @@ import io.aeron.monitoring.model.StreamInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static io.aeron.CommonContext.AERON_DIR_PROP_DEFAULT;
 
@@ -41,7 +43,7 @@ public class CncSnapshotController {
 
     @RequestMapping("counters")
     @ApiOperation("Returns counters related to the Media Driver entirely")
-    public Map<SystemCounterDescriptor, CounterValue> getCounters(
+    public Set<CounterValue> getCounters(
             @RequestParam("mediaDriver")
             @ApiParam("Media Driver directory to be read")
             final Optional<String> mediaDriver) {
@@ -55,7 +57,7 @@ public class CncSnapshotController {
                                    final Optional<String> mediaDriver,
                                    @PathVariable("counter")
                                    @ApiParam("Media Driver's counter name")
-                                   final String counterName) {
+                                   final SystemCounterDescriptor counterName) {
         return getCncCounterValue(mediaDriver, counterName);
     }
 
@@ -66,7 +68,7 @@ public class CncSnapshotController {
                                 final Optional<String> mediaDriver,
                                 @PathVariable("counter")
                                 @ApiParam("Media Driver's counter name")
-                                final String counterName) {
+                                final SystemCounterDescriptor counterName) {
         return getCncCounterValue(mediaDriver, counterName)
                 .getValue();
     }
@@ -78,8 +80,9 @@ public class CncSnapshotController {
                                   final Optional<String> mediaDriver,
                                   @PathVariable("counter")
                                   @ApiParam("Media Driver's counter name")
-                                  final String counterName) {
-        return getCncCounterValue(mediaDriver, counterName).getLabel();
+                                  final SystemCounterDescriptor counterName) {
+        return getCncCounterValue(mediaDriver, counterName)
+                .getLabel();
     }
 
     @RequestMapping("channels")
@@ -118,11 +121,12 @@ public class CncSnapshotController {
     }
 
     private CounterValue getCncCounterValue(final Optional<String> mediaDriver,
-                                            final String counterName) {
+                                            final SystemCounterDescriptor descriptor) {
         final CncSnapshot snapshot = readSnapshot(mediaDriver);
-        final SystemCounterDescriptor counter = SystemCounterDescriptor.valueOf(counterName);
-        final Map<SystemCounterDescriptor, CounterValue> counters = snapshot.getCounters();
-        return counters.get(counter);
+        final Set<CounterValue> counters = snapshot.getCounters();
+        return counters.stream()
+                .filter(counter -> counter.getDescriptor().equals(descriptor))
+                .findAny().orElseThrow(CounterNotFoundException::new);
     }
 
     private ChannelInfo getCncChannelInfo(final Optional<String> mediaDriver,
@@ -134,6 +138,15 @@ public class CncSnapshotController {
     private CncSnapshot readSnapshot(final Optional<String> mediaDriver) {
         final File cnc = new File(mediaDriver.orElse(AERON_DIR_PROP_DEFAULT),
                 CncFileDescriptor.CNC_FILE);
+        if (!cnc.exists()) {
+            throw new MediaDriverNotFoundException();
+        }
         return cncReader.read(cnc);
     }
+
+    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Counter is not found")
+    public static class CounterNotFoundException extends RuntimeException{}
+
+    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Media driver is not found")
+    public static class MediaDriverNotFoundException extends RuntimeException{}
 }

@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,7 +72,7 @@ public class CncReader {
         counters.forEach(parser);
 
         return new CncSnapshot(
-                cncVersion, counters.maxCounterId(), parser.counterValues, parser.channels);
+                cncVersion, counters.maxCounterId(), new TreeSet<>(parser.counterValues.values()), parser.channels);
     }
 
     private class CounterParser implements CountersReader.MetaData {

@@ -8,8 +8,9 @@ import java.util.Objects;
 
 @ApiModel(description = "Information about single counter including metric's name, " +
         "human-readable label and current value")
-public class CounterValue {
+public class CounterValue implements Comparable<CounterValue> {
 
+    @ApiModelProperty("Counter id in CnC file")
     private final int id;
 
     @ApiModelProperty("Counter name")
@@ -36,6 +37,10 @@ public class CounterValue {
         this.value = value;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public SystemCounterDescriptor getDescriptor() {
         return descriptor;
     }
@@ -53,20 +58,7 @@ public class CounterValue {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        final CounterValue that = (CounterValue) o;
-        return descriptor == that.descriptor;
-    }
-
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(descriptor);
+    public int compareTo(final CounterValue other) {
+        return Integer.compare(id, other.id);
     }
 }
