@@ -26,7 +26,8 @@ public class CounterValue implements Comparable<CounterValue> {
     private final long value;
 
     public CounterValue(
-            final int id, final SystemCounterDescriptor descriptor,
+            final int id,
+            final SystemCounterDescriptor descriptor,
             final int typeId,
             final String label,
             final long value) {

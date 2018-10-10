@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static io.aeron.driver.status.SystemCounterDescriptor.BYTES_RECEIVED;
 import static io.aeron.driver.status.SystemCounterDescriptor.BYTES_SENT;
@@ -98,7 +100,12 @@ class CncReaderTest {
         assertEquals(14, snapshot.getVersion());
         assertEquals(8192, snapshot.getMaxCounterId());
 
-        final Map<SystemCounterDescriptor, CounterValue> counters = snapshot.getCounters();
+        final Map<SystemCounterDescriptor, CounterValue> counters =
+                snapshot.getCounters()
+                        .stream()
+                        .collect(Collectors.toMap(
+                                CounterValue::getDescriptor,
+                                Function.identity()));
         assertEquals(604_845_376L, counters.get(BYTES_SENT).getValue());
         assertEquals(604_845_376L, counters.get(BYTES_RECEIVED).getValue());
         assertEquals(0L, counters.get(RECEIVER_PROXY_FAILS).getValue());
