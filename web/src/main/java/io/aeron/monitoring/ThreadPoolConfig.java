@@ -26,7 +26,7 @@ public class ThreadPoolConfig {
         pool.setIdleTimeout(DEFAULT_IDLE_TIMEOUT_MILLIS);
         LOG.debug("Thread pool: {}", pool);
 
-        pool.start();
         return pool;
     }
+
 }

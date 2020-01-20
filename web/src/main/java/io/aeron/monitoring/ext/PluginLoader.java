@@ -25,13 +25,16 @@ public class PluginLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(PluginLoader.class);
 
-    @Autowired
-    private ApplicationArguments applicationArguments;
+    private final ApplicationArguments applicationArguments;
 
-    @Autowired
-    private ThreadPool taskExecutor;
+    private final ThreadPool taskExecutor;
 
     private final List<Plugin> plugins = new ArrayList<>();
+
+    public PluginLoader(ApplicationArguments applicationArguments, ThreadPool taskExecutor) {
+        this.applicationArguments = applicationArguments;
+        this.taskExecutor = taskExecutor;
+    }
 
     public List<Plugin> getPlugins() {
         return Collections.unmodifiableList(plugins);

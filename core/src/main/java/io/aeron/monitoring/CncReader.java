@@ -44,6 +44,37 @@ import static io.aeron.driver.status.SystemCounterDescriptor.SYSTEM_COUNTER_TYPE
 
 public class CncReader {
 
+    static String extractUriFromLabel(final String label) {
+        final Pattern pattern = Pattern.compile(" (aeron:.+).*$");
+        final Matcher matcher = pattern.matcher(label);
+        if (matcher.find()) {
+            return matcher.group(1);
+        } else {
+            throw new IllegalStateException("bad label: " + label);
+        }
+    }
+
+    static Integer extractIdFromLabel(final String label) {
+        final Pattern pattern = Pattern.compile("(\\d+) aeron:.+$");
+        return extractInteger(label, pattern);
+    }
+
+    static Integer extractPubSubIdFromLabel(final String label, final String counterName) {
+
+        final String regex = Pattern.quote(counterName) + ": (\\d+) .*";
+        final Pattern pattern = Pattern.compile(regex);
+        return extractInteger(label, pattern);
+    }
+
+    private static Integer extractInteger(final String label, final Pattern pattern) {
+        final Matcher matcher = pattern.matcher(label);
+        if (matcher.find()) {
+            return Integer.valueOf(matcher.group(1));
+        } else {
+            throw new IllegalStateException("bad label: " + label);
+        }
+    }
+
     public CncSnapshot read() {
         return read(CommonContext.newDefaultCncFile());
     }
@@ -55,31 +86,31 @@ public class CncReader {
 
         if (cncVersion != CNC_VERSION) {
             throw new IllegalStateException(
-                    "Aeron CnC version does not match: version="
-                            + cncVersion
-                            + " required="
-                            + CNC_VERSION);
+                "Aeron CnC version does not match: version="
+                    + cncVersion
+                    + " required="
+                    + CNC_VERSION);
         }
 
         final CountersReader counters =
-                new CountersReader(
-                        createCountersMetaDataBuffer(cncByteBuffer, cncMetaData),
-                        createCountersValuesBuffer(cncByteBuffer, cncMetaData),
-                        StandardCharsets.US_ASCII);
+            new CountersReader(
+                createCountersMetaDataBuffer(cncByteBuffer, cncMetaData),
+                createCountersValuesBuffer(cncByteBuffer, cncMetaData),
+                StandardCharsets.US_ASCII);
 
         final CounterParser parser = new CounterParser(counters);
         counters.forEach(parser);
 
         return new CncSnapshot(
-                cncVersion, counters.maxCounterId(), parser.counterValues, parser.channels);
+            cncVersion, counters.maxCounterId(), parser.counterValues, parser.channels);
     }
 
     private class CounterParser implements CountersReader.MetaData {
 
-        private CountersReader counters;
         final Map<SystemCounterDescriptor, CounterValue> counterValues =
-                new EnumMap<>(SystemCounterDescriptor.class);
+            new EnumMap<>(SystemCounterDescriptor.class);
         final Map<String, ChannelInfo> channels = new HashMap<>();
+        private CountersReader counters;
 
         public CounterParser(final CountersReader counters) {
             this.counters = counters;
@@ -87,18 +118,18 @@ public class CncReader {
 
         @Override
         public void accept(
-                final int counterId,
-                final int typeId,
-                final DirectBuffer keyBuffer,
-                final String label) {
+            final int counterId,
+            final int typeId,
+            final DirectBuffer keyBuffer,
+            final String label) {
 
             final long value = counters.getCounterValue(counterId);
 
             if (typeId == SYSTEM_COUNTER_TYPE_ID) {
                 counterValues.put(
-                        SystemCounterDescriptor.get(counterId),
-                        new CounterValue(
-                                SystemCounterDescriptor.get(counterId), typeId, label, value));
+                    SystemCounterDescriptor.get(counterId),
+                    new CounterValue(
+                        SystemCounterDescriptor.get(counterId), typeId, label, value));
                 return;
             }
 
@@ -163,7 +194,7 @@ public class CncReader {
         }
 
         private void updatePublisherPosition(
-                final String label, final long value, final ChannelInfo channelInfo) {
+            final String label, final long value, final ChannelInfo channelInfo) {
             final StreamInfo streamInfo = findStreamInfo(label, channelInfo);
             if (streamInfo.getPublication() == null) {
                 final Integer publisherId = extractPubSubIdFromLabel(label, PublisherPos.NAME);
@@ -173,7 +204,7 @@ public class CncReader {
         }
 
         private void updatePublisherLimit(
-                final String label, final long value, final ChannelInfo channelInfo) {
+            final String label, final long value, final ChannelInfo channelInfo) {
             final StreamInfo streamInfo = findStreamInfo(label, channelInfo);
             if (streamInfo.getPublication() == null) {
                 final Integer publisherId = extractPubSubIdFromLabel(label, PublisherPos.NAME);
@@ -183,13 +214,13 @@ public class CncReader {
         }
 
         private void updateSubscriberPosition(
-                final String label, final long value, final ChannelInfo channelInfo) {
+            final String label, final long value, final ChannelInfo channelInfo) {
             final Integer subscriptionId = extractPubSubIdFromLabel(label, PublisherLimit.NAME);
 
             final SubscriptionInfo subscriptionInfo =
-                    findStreamInfo(label, channelInfo)
-                            .getSubscriptions()
-                            .computeIfAbsent(subscriptionId, SubscriptionInfo::new);
+                findStreamInfo(label, channelInfo)
+                    .getSubscriptions()
+                    .computeIfAbsent(subscriptionId, SubscriptionInfo::new);
 
             subscriptionInfo.setPosition(value);
         }
@@ -198,37 +229,6 @@ public class CncReader {
 
             final Integer id = extractIdFromLabel(label);
             return channelInfo.getStreams().computeIfAbsent(id, StreamInfo::new);
-        }
-    }
-
-    static String extractUriFromLabel(final String label) {
-        final Pattern pattern = Pattern.compile(" (aeron:.+).*$");
-        final Matcher matcher = pattern.matcher(label);
-        if (matcher.find()) {
-            return matcher.group(1);
-        } else {
-            throw new IllegalStateException("bad label: " + label);
-        }
-    }
-
-    static Integer extractIdFromLabel(final String label) {
-        final Pattern pattern = Pattern.compile("(\\d+) aeron:.+$");
-        return extractInteger(label, pattern);
-    }
-
-    static Integer extractPubSubIdFromLabel(final String label, final String counterName) {
-
-        final String regex = Pattern.quote(counterName) + ": (\\d+) .*";
-        final Pattern pattern = Pattern.compile(regex);
-        return extractInteger(label, pattern);
-    }
-
-    private static Integer extractInteger(final String label, final Pattern pattern) {
-        final Matcher matcher = pattern.matcher(label);
-        if (matcher.find()) {
-            return Integer.valueOf(matcher.group(1));
-        } else {
-            throw new IllegalStateException("bad label: " + label);
         }
     }
 }

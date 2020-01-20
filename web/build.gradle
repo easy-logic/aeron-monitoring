@@ -1,32 +1,32 @@
 buildscript {
     dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.0.5.RELEASE"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.2.3.RELEASE"
     }
 }
 
 plugins {
-    id "org.springframework.boot" version "2.0.5.RELEASE"
-    id "io.spring.dependency-management" version "1.0.6.RELEASE"
+    id "org.springframework.boot" version "2.2.3.RELEASE"
+    id "io.spring.dependency-management" version "1.0.8.RELEASE"
     id "com.eriwen.gradle.js" version "2.14.1"
 }
 
 dependencies {
-    compile project(':core')
-    compile('org.springframework.boot:spring-boot-starter')
-    compile ('org.springframework.boot:spring-boot-starter-web') {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'  
+    implementation project (':core')
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation('org.springframework.boot:spring-boot-starter-web') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
     }
-    compile('org.springframework.boot:spring-boot-starter-jetty')
-    compile('org.springframework.boot:spring-boot-starter-thymeleaf')
-    compile('org.springframework.boot:spring-boot-devtools')
-    compile('io.springfox:springfox-swagger2:2.9.2')
-    compile('io.springfox:springfox-swagger-ui:2.9.2')
-    testCompile('org.springframework.boot:spring-boot-starter-test')
+    implementation 'org.springframework.boot:spring-boot-starter-jetty'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-devtools'
+    implementation 'io.springfox:springfox-swagger2:2.9.2'
+    implementation 'io.springfox:springfox-swagger-ui:2.9.2'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 bootJar {
-    baseName = rootProject.name
-    version =  artifact_version
+    archiveBaseName = rootProject.name
+    archiveVersion = artifact_version
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
