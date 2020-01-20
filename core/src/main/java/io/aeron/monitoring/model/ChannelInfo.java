@@ -13,14 +13,14 @@ public class ChannelInfo {
     @ApiModelProperty("channel url")
     private final String uri;
 
+    @ApiModelProperty("Stream statistics of the given channel")
+    private final Map<Integer, StreamInfo> streams = new HashMap<>();
+
     @ApiModelProperty("Media Driver's sender statistics")
     private SenderInfo sender;
 
     @ApiModelProperty("Media Driver's receiver statistics")
     private ReceiverInfo receiver;
-
-    @ApiModelProperty("Stream statistics of the given channel")
-    private final Map<Integer, StreamInfo> streams = new HashMap<>();
 
     public ChannelInfo(final String uri) {
         this.uri = uri;
@@ -58,7 +58,7 @@ public class ChannelInfo {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final ChannelInfo that = (ChannelInfo)o;
+        final ChannelInfo that = (ChannelInfo) o;
         return Objects.equals(uri, that.uri);
     }
 

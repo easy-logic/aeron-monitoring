@@ -12,8 +12,11 @@ public class WebServerCustomizer
 
     private static final int DEFAULT_SERVER_ACCEPTORS = 1;
 
-    @Autowired
-    private ThreadPool taskExecutor;
+    private final ThreadPool taskExecutor;
+
+    public WebServerCustomizer(ThreadPool taskExecutor) {
+        this.taskExecutor = taskExecutor;
+    }
 
     @Override
     public void customize(JettyServletWebServerFactory factory) {
