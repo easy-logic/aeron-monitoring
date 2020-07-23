@@ -3,10 +3,10 @@ package io.aeron.monitoring.api;
 import io.aeron.CncFileDescriptor;
 import io.aeron.driver.status.SystemCounterDescriptor;
 import io.aeron.monitoring.CncReader;
-import io.aeron.monitoring.model.ChannelInfo;
+import io.aeron.monitoring.model.StreamInfo;
 import io.aeron.monitoring.model.CncSnapshot;
 import io.aeron.monitoring.model.CounterValue;
-import io.aeron.monitoring.model.StreamInfo;
+import io.aeron.monitoring.model.StreamKey;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -74,33 +74,11 @@ public class CncSnapshotController {
         return getCncCounterValue(mediaDriver, counterName).getLabel();
     }
 
-    @RequestMapping("channels")
+    @RequestMapping("endpoints")
     @ApiOperation("Return information about all pipes of the Media Driver")
-    public Map<String, ChannelInfo> getChannels(@RequestParam("mediaDriver")
+    public Map<StreamKey, StreamInfo> getChannels(@RequestParam("mediaDriver")
                                                 @ApiParam("Media Driver directory to be read") final Optional<String> mediaDriver) {
-        return readSnapshot(mediaDriver).getChannels();
-    }
-
-    @RequestMapping("channels/{channel}")
-    @ApiOperation("Return information about single channel specified by parameter")
-    public ChannelInfo getChannelInfo(@RequestParam("mediaDriver")
-                                      @ApiParam("Media Driver directory to be read") final Optional<String> mediaDriver,
-                                      @PathVariable("channel")
-                                      @ApiParam("URL which specifies channel") final String channel) {
-        return getCncChannelInfo(mediaDriver, channel);
-    }
-
-    @RequestMapping("channels/{channel}/{stream}")
-    @ApiOperation("Return information about single pipe specified by parameters")
-    public StreamInfo getStreamInfo(@RequestParam("mediaDriver")
-                                    @ApiParam("Media Driver directory to be read") final Optional<String> mediaDriver,
-                                    @PathVariable("channel")
-                                    @ApiParam("URL which specifies channel") final String channel,
-                                    @PathVariable("streamId")
-                                    @ApiParam("Stream identifier") final Integer streamId) {
-        final Map<Integer, StreamInfo> streams = getCncChannelInfo(mediaDriver, channel)
-                .getStreams();
-        return streams.get(streamId);
+        return readSnapshot(mediaDriver).getEndpoints();
     }
 
     private CounterValue getCncCounterValue(final Optional<String> mediaDriver,
@@ -111,11 +89,6 @@ public class CncSnapshotController {
         return counters.get(counter);
     }
 
-    private ChannelInfo getCncChannelInfo(final Optional<String> mediaDriver,
-                                          final String channel) {
-        final Map<String, ChannelInfo> counters = readSnapshot(mediaDriver).getChannels();
-        return counters.get(channel);
-    }
 
     private CncSnapshot readSnapshot(final Optional<String> mediaDriver) {
         final File cnc = new File(mediaDriver.orElse(AERON_DIR_PROP_DEFAULT),

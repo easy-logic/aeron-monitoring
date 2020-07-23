@@ -1,11 +1,22 @@
-dependencies {
-    compile "io.aeron:aeron-client:$aeronVersion"
-    compile "io.aeron:aeron-driver:$aeronVersion"
-    compile "io.swagger:swagger-annotations:1.5.21"
+plugins {
+    id "java-library"
+}
 
+dependencies {
+    api "io.aeron:aeron-client:$aeronVersion"
+    api "io.aeron:aeron-driver:$aeronVersion"
+    implementation "io.swagger:swagger-annotations:1.5.21"
+
+    compileOnly 'org.projectlombok:lombok:1.18.12'
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+    testImplementation "org.assertj:assertj-core:3.16.1"
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'org.awaitility:awaitility:4.0.3'
+
 }
 
 jar {

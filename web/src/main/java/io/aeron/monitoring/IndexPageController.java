@@ -14,14 +14,14 @@ public class IndexPageController {
     private static final String TEMPLATE_KEY_PAGE_TITLE = "page_title";
     private static final String TEMPLATE_KEY_TOOLBAR_TITLE = "toolbar_title";
     
-    @Value("${app.version}")
-    private String appVersion;
+//    @Value("${app.version}")
+    private String appVersion = "123";
 
-    @Value("${page.index.title}")
-    private String pageTitle;
+//    @Value("${page.index.title}")
+    private String pageTitle = "hello!";
 
-    @Value("${page.index.toolbar.title}")
-    private String toolBarTitle;
+//    @Value("${page.index.toolbar.title}")
+    private String toolBarTitle = "hi!";
 
     @RequestMapping("/")
     public String welcome(final Map<String, Object> model) {

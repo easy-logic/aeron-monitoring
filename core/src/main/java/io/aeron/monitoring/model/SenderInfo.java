@@ -1,55 +1,26 @@
 package io.aeron.monitoring.model;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
 
-@ApiModel
+@Getter
+@Setter
 public class SenderInfo {
 
-    @ApiModelProperty("")
+    private final long registrationId;
+    private final int sessionId;
+    private final int streamId;
+    private final String channel;
+
     private boolean status;
-
-    @ApiModelProperty("The position the Sender has reached for sending data to the media on a "
-        + "session-channel-stream tuple.")
     private long position;
-
-    @ApiModelProperty
-    private long highWaterMark;
-
-    @ApiModelProperty("The limit as a position in bytes applied to publishers on a "
-        + "session-channel-stream tuple. Publishers will experience back pressure when this "
-        + "position is passed as a means of flow control")
     private long limit;
+    private long backpressure;
 
-    public boolean getStatus() {
-        return status;
-    }
-
-    public void setStatus(final boolean status) {
-        this.status = status;
-    }
-
-    public long getPosition() {
-        return position;
-    }
-
-    public void setPosition(final long position) {
-        this.position = position;
-    }
-
-    public long getHighWaterMark() {
-        return highWaterMark;
-    }
-
-    public void setHighWaterMark(final long highWaterMark) {
-        this.highWaterMark = highWaterMark;
-    }
-
-    public long getLimit() {
-        return limit;
-    }
-
-    public void setLimit(final long limit) {
-        this.limit = limit;
+    public SenderInfo(long registrationId, int sessionId, int streamId, String channel) {
+        this.registrationId = registrationId;
+        this.sessionId = sessionId;
+        this.streamId = streamId;
+        this.channel = channel;
     }
 }
