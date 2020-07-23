@@ -18,7 +18,7 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class CncReaderTest {
+class CncReaderOnePubOneSubTest {
     public static final String CHANNEL = "aeron:udp?endpoint=localhost:1234";
     public static final int STREAM_ID = 123;
     public static final int MESSAGE_SIZE = 100;

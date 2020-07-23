@@ -9,30 +9,33 @@ import lombok.extern.slf4j.Slf4j;
 import org.agrona.DirectBuffer;
 import org.agrona.concurrent.status.CountersReader;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static io.aeron.driver.status.ClientHeartbeatTimestamp.CLIENT_HEARTBEAT_TYPE_ID;
 import static io.aeron.driver.status.PublisherLimit.PUBLISHER_LIMIT_TYPE_ID;
 import static io.aeron.driver.status.PublisherPos.PUBLISHER_POS_TYPE_ID;
-import static io.aeron.driver.status.ReceiveChannelStatus.RECEIVE_CHANNEL_STATUS_TYPE_ID;
 import static io.aeron.driver.status.ReceiverHwm.RECEIVER_HWM_TYPE_ID;
 import static io.aeron.driver.status.ReceiverPos.RECEIVER_POS_TYPE_ID;
-import static io.aeron.driver.status.SendChannelStatus.SEND_CHANNEL_STATUS_TYPE_ID;
 import static io.aeron.driver.status.SenderBpe.SENDER_BPE_TYPE_ID;
 import static io.aeron.driver.status.SenderLimit.SENDER_LIMIT_TYPE_ID;
 import static io.aeron.driver.status.SenderPos.SENDER_POSITION_TYPE_ID;
 import static io.aeron.driver.status.SubscriberPos.SUBSCRIBER_POSITION_TYPE_ID;
 import static io.aeron.driver.status.SystemCounterDescriptor.SYSTEM_COUNTER_TYPE_ID;
-import static io.aeron.status.LocalSocketAddressStatus.LOCAL_SOCKET_ADDRESS_STATUS_TYPE_ID;
 
 @Slf4j
 class CounterParser implements CountersReader.MetaData {
 
     final Map<SystemCounterDescriptor, CounterValue> counterValues =
             new EnumMap<>(SystemCounterDescriptor.class);
-    final Map<StreamKey, StreamInfo> channels = new TreeMap<>(Comparator.comparing(StreamKey::getEndpoint));
+    final Map<StreamKey, StreamInfo> channels =
+            new TreeMap<>(
+                    Comparator
+                            .comparing(StreamKey::getEndpoint)
+                            .thenComparing(StreamKey::getStreamId));
     final CountersReader counters;
 
     public CounterParser(CountersReader counters) {
