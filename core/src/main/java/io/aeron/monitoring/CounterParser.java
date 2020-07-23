@@ -32,6 +32,12 @@ class CounterParser implements CountersReader.MetaData {
             new EnumMap<>(SystemCounterDescriptor.class);
     final Map<StreamKey, StreamInfo> channels = new TreeMap<>(Comparator.comparing(StreamKey::getEndpoint));
     final CountersReader counters;
+    final Set<Integer> ignored = new HashSet(Arrays.asList(
+            CLIENT_HEARTBEAT_TYPE_ID,
+            SEND_CHANNEL_STATUS_TYPE_ID,
+            RECEIVE_CHANNEL_STATUS_TYPE_ID,
+            LOCAL_SOCKET_ADDRESS_STATUS_TYPE_ID
+    ));
 
     public CounterParser(CountersReader counters) {
         this.counters = counters;
@@ -52,19 +58,14 @@ class CounterParser implements CountersReader.MetaData {
             return;
         }
 
-        if (Set.of(
-                CLIENT_HEARTBEAT_TYPE_ID,
-                SEND_CHANNEL_STATUS_TYPE_ID,
-                RECEIVE_CHANNEL_STATUS_TYPE_ID,
-                LOCAL_SOCKET_ADDRESS_STATUS_TYPE_ID
-        ).contains(typeId)) {
+        if (ignored.contains(typeId)) {
             return;
         }
 
         StreamKey key = extractStreamKeyFromLabel(label);
         StreamInfo streamInfo = channels.computeIfAbsent(key, k -> new StreamInfo());
         switch (typeId) {
-            case SENDER_POSITION_TYPE_ID -> {
+            case SENDER_POSITION_TYPE_ID:
                 LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
                     SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
                     SenderInfo sender = sessionInfo.createIfAbsentSender(
@@ -75,8 +76,8 @@ class CounterParser implements CountersReader.MetaData {
                             channel);
                     sender.setPosition(value);
                 });
-            }
-            case SENDER_LIMIT_TYPE_ID -> {
+                break;
+            case SENDER_LIMIT_TYPE_ID:
                 LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
                     SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
                     SenderInfo sender = sessionInfo.createIfAbsentSender(
@@ -87,8 +88,8 @@ class CounterParser implements CountersReader.MetaData {
                             channel);
                     lookupSession(streamInfo, sessionId).getSender().setLimit(value);
                 });
-            }
-            case SENDER_BPE_TYPE_ID -> {
+                break;
+            case SENDER_BPE_TYPE_ID:
                 LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
                     SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
                     SenderInfo sender = sessionInfo.createIfAbsentSender(
@@ -99,12 +100,12 @@ class CounterParser implements CountersReader.MetaData {
                             channel);
                     sender.setBackpressure(value);
                 });
-            }
-//            case SEND_CHANNEL_STATUS_TYPE_ID -> {
+                break;
+//            case SEND_CHANNEL_STATUS_TYPE_ID:
 //                SendChannelStatus.parseLabel(label, streamInfo::acceptSendChannelStatus);
 //                streamInfo.getSender().setStatus(value == 1);
-//            }
-            case RECEIVER_POS_TYPE_ID -> {
+//                break;
+            case RECEIVER_POS_TYPE_ID:
                 LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
                     SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
                     ReceiverInfo receiver = sessionInfo.createIfAbsentReceiver(
@@ -115,8 +116,8 @@ class CounterParser implements CountersReader.MetaData {
                             channel);
                     receiver.setPosition(value);
                 });
-            }
-            case RECEIVER_HWM_TYPE_ID -> {
+                break;
+            case RECEIVER_HWM_TYPE_ID:
                 LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
                     SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
                     ReceiverInfo receiver = sessionInfo.createIfAbsentReceiver(
@@ -127,12 +128,12 @@ class CounterParser implements CountersReader.MetaData {
                             channel);
                     receiver.setHighWaterMark(value);
                 });
-            }
-//            case RECEIVE_CHANNEL_STATUS_TYPE_ID -> {
+                break;
+//            case RECEIVE_CHANNEL_STATUS_TYPE_ID:
 //                ReceiveChannelStatus.parseLabel(label, streamInfo::acceptReceiveChannelStatus);
 //                streamInfo.getReceiver().setStatus(value == 1);
-//            }
-            case PUBLISHER_POS_TYPE_ID -> {
+//                break;
+            case PUBLISHER_POS_TYPE_ID:
                 LabelParser.parsePublisherPosLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
                     PublisherInfo publisherInfo =
                             lookupSession(streamInfo, sessionId).createIfAbsentPublisher(
@@ -141,8 +142,8 @@ class CounterParser implements CountersReader.MetaData {
                                     channel);
                     publisherInfo.setPosition(value);
                 });
-            }
-            case PUBLISHER_LIMIT_TYPE_ID -> {
+                break;
+            case PUBLISHER_LIMIT_TYPE_ID:
                 LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
                     PublisherInfo publisherInfo =
                             lookupSession(streamInfo, sessionId).createIfAbsentPublisher(
@@ -151,8 +152,8 @@ class CounterParser implements CountersReader.MetaData {
                                     channel);
                     publisherInfo.setLimit(value);
                 });
-            }
-            case SUBSCRIBER_POSITION_TYPE_ID -> {
+                break;
+            case SUBSCRIBER_POSITION_TYPE_ID:
                 LabelParser.parseSubscriberPosLabel(
                         label,
                         (name, registrationId, sessionId, streamId, channel, joinPosition) -> {
@@ -164,7 +165,7 @@ class CounterParser implements CountersReader.MetaData {
                                             joinPosition);
                             subscriberInfo.setPosition(value);
                         });
-            }
+                break;
         }
     }
 

@@ -1,4 +1,4 @@
-package io.aeron.monitoring;
+package io.aeron.monitoring.custom;
 
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.ThreadPool;

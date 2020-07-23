@@ -23,23 +23,23 @@ class CncReaderTest {
     public static final int STREAM_ID = 123;
     public static final int MESSAGE_SIZE = 100;
 
-    private final CncReader reader = new CncReader();
     private final IdleStrategy idleStrategy = new SleepingMillisIdleStrategy(1);
 
     @Test
     void shouldReadOnePublisherOneSubscriber() {
-        try (MediaDriver mediaDriver = MediaDriver.launch(new MediaDriver.Context().dirDeleteOnShutdown(false));
+        try (MediaDriver mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().dirDeleteOnShutdown(false));
              Aeron aeron = Aeron.connect(new Aeron.Context().aeronDirectoryName(mediaDriver.aeronDirectoryName()));
              Publication publication = aeron.addPublication(CHANNEL + "|alias=pub", STREAM_ID);
              Subscription subscription = aeron.addSubscription(CHANNEL + "|alias=sub", STREAM_ID)) {
+            CncReader reader = new CncReader(mediaDriver.aeronDirectoryName());
 
-            await().untilAsserted(() -> verifySnapshot(mediaDriver, publication, subscription));
+            await().untilAsserted(() -> verifySnapshot(reader, publication, subscription));
 
             while (subscription.hasNoImages()) {
                 idleStrategy.idle();
             }
 
-            await().untilAsserted(() -> verifySnapshot(mediaDriver, publication, subscription));
+            await().untilAsserted(() -> verifySnapshot(reader, publication, subscription));
 
             MutableBoolean received = new MutableBoolean(false);
             FragmentHandler fragmentHandler = (buffer, offset, length, header) -> {
@@ -50,16 +50,16 @@ class CncReaderTest {
                 idleStrategy.idle();
             }
 
-            await().untilAsserted(() -> verifySnapshot(mediaDriver, publication, subscription));
+            await().untilAsserted(() -> verifySnapshot(reader, publication, subscription));
 
             while (!received.value) {
                 subscription.poll(fragmentHandler, Integer.MAX_VALUE);
             }
 
-            await().untilAsserted(() -> verifySnapshot(mediaDriver, publication, subscription));
+            await().untilAsserted(() -> verifySnapshot(reader, publication, subscription));
 
 
-            CncSnapshot snapshot = reader.lookupAndRead(mediaDriver.aeronDirectoryName());
+            CncSnapshot snapshot = reader.read();
             StreamInfo streamInfo = findStreamInfo(snapshot);
             SessionInfo sessionInfo =
                     streamInfo.findSession(publication.sessionId()).orElseThrow(AssertionError::new);
@@ -69,8 +69,8 @@ class CncReaderTest {
 
     }
 
-    private void verifySnapshot(MediaDriver mediaDriver, Publication publication, Subscription subscription) {
-        CncSnapshot snapshot = reader.lookupAndRead(mediaDriver.aeronDirectoryName());
+    private void verifySnapshot(CncReader reader, Publication publication, Subscription subscription) {
+        CncSnapshot snapshot = reader.read();
 
         assertThat(publication.position())
                 .isLessThanOrEqualTo(snapshot.getCounters().get(BYTES_SENT).getValue());

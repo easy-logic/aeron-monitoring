@@ -15,16 +15,17 @@ import java.nio.file.Paths;
 import static io.aeron.CncFileDescriptor.*;
 
 public class CncReader {
+    private final File cncFile;
 
-    public CncSnapshot lookupAndRead(String aeronDirectoryName) {
-        return read(Paths.get(aeronDirectoryName).resolve(CncFileDescriptor.CNC_FILE).toFile());
+    public CncReader() {
+        cncFile = CommonContext.newDefaultCncFile();
+    }
+
+    public CncReader(String aeronDirectoryName) {
+        cncFile = Paths.get(aeronDirectoryName).resolve(CncFileDescriptor.CNC_FILE).toFile();
     }
 
     public CncSnapshot read() {
-        return read(CommonContext.newDefaultCncFile());
-    }
-
-    public CncSnapshot read(final File cncFile) {
         final MappedByteBuffer cncByteBuffer = IoUtil.mapExistingFile(cncFile, "cnc");
         final DirectBuffer cncMetaData = createMetaDataBuffer(cncByteBuffer);
         final int cncVersion = cncMetaData.getInt(cncVersionOffset(0));

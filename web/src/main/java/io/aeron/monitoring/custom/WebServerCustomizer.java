@@ -1,7 +1,6 @@
-package io.aeron.monitoring;
+package io.aeron.monitoring.custom;
 
 import org.eclipse.jetty.util.thread.ThreadPool;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
