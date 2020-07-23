@@ -1,7 +1,12 @@
 language: java
 
 jdk:
+  - openjdk8
   - openjdk14
+
+os:
+  - linux
+  - windows
 
 script: ./gradlew build --info --stacktrace --console=plain --max-workers=1 --no-daemon 
 

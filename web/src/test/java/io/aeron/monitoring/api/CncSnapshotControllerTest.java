@@ -5,7 +5,6 @@ import io.aeron.driver.ThreadingMode;
 import org.agrona.concurrent.SleepingMillisIdleStrategy;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,7 +12,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.env.PropertySourcesPropertyResolver;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.support.TestPropertySourceUtils;
@@ -42,8 +40,10 @@ public class CncSnapshotControllerTest {
 
         @Override
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+            String propertyValue =
+                    "app.md.path=" + mediaDriver.aeronDirectoryName().replace("\\", "\\\\");
             TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
-                    configurableApplicationContext, "app.md.path=" + mediaDriver.aeronDirectoryName());
+                    configurableApplicationContext, propertyValue);
         }
     }
 
