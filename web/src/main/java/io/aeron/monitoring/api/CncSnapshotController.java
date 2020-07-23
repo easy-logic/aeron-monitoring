@@ -29,19 +29,19 @@ public class CncSnapshotController {
     @RequestMapping("version")
     @Operation(summary = "Returns version of the CnC file")
     public Integer getVersion() {
-        return cncReader.read().getVersion();
+        return cncReader.read().map(CncSnapshot::getVersion).orElseThrow(CncFileException::new);
     }
 
     @RequestMapping("snapshot")
     @Operation(summary = "Returns all the information from CnC file at once")
     public CncSnapshot getSnapshot() {
-        return cncReader.read();
+        return cncReader.read().orElseThrow(CncFileException::new);
     }
 
     @RequestMapping("counters")
     @Operation(summary = "Returns counters related to the Media Driver entirely")
     public Map<SystemCounterDescriptor, CounterValue> getCounters() {
-        return cncReader.read().getCounters();
+        return cncReader.read().orElseThrow(CncFileException::new).getCounters();
     }
 
     @RequestMapping("counters/{counter}")
@@ -60,7 +60,7 @@ public class CncSnapshotController {
     @RequestMapping("streams")
     @Operation(summary = "Return information about all streams of the Media Driver")
     public Map<StreamKey, StreamInfo> getEndpoints() {
-        return cncReader.read().getStreams();
+        return cncReader.read().orElseThrow(CncFileException::new).getStreams();
     }
 
     @RequestMapping("streams/{endpoint}/{streamId}")
@@ -68,9 +68,10 @@ public class CncSnapshotController {
     public StreamInfo getEndpoint(
             @PathVariable("endpoint") String endpoint,
             @PathVariable("streamId") Integer streamId) {
-        StreamInfo streamInfo = cncReader.read().getStreams().get(new StreamKey(
-                endpoint.toLowerCase(),
-                streamId));
+        StreamInfo streamInfo = cncReader.read()
+                .orElseThrow(CncFileException::new)
+                .getStreams()
+                .get(new StreamKey(endpoint.toLowerCase(), streamId));
         if (streamInfo == null) {
             throw new StreamNotFoundException();
         }
@@ -84,9 +85,10 @@ public class CncSnapshotController {
             @PathVariable("endpoint") String endpoint,
             @PathVariable("streamId") Integer streamId,
             @PathVariable("session") Integer sessionId) {
-        StreamInfo streamInfo = cncReader.read().getStreams().get(new StreamKey(
-                endpoint.toLowerCase(),
-                streamId));
+        StreamInfo streamInfo = cncReader.read()
+                .orElseThrow(CncFileException::new)
+                .getStreams()
+                .get(new StreamKey(endpoint.toLowerCase(), streamId));
         if (streamInfo == null) {
             throw new StreamNotFoundException();
         }
@@ -98,7 +100,8 @@ public class CncSnapshotController {
     @Operation(summary = "Return information about a session")
     public List<SessionInfo> findSession(
             @PathVariable("session") Integer sessionId) {
-        return cncReader.read().getStreams().values().stream()
+        CncSnapshot snapshot = cncReader.read().orElseThrow(CncFileException::new);
+        return snapshot.getStreams().values().stream()
                 .flatMap(streamInfo -> streamInfo.getSessions().values().stream())
                 .filter(sessionInfo -> sessionInfo.getSessionId() == sessionId)
                 .collect(Collectors.toList());
@@ -106,12 +109,17 @@ public class CncSnapshotController {
 
     private CounterValue getCncCounterValue(
             String counterName) {
-        CncSnapshot snapshot = cncReader.read();
+        CncSnapshot snapshot = cncReader.read().orElseThrow(CncFileException::new);
         SystemCounterDescriptor counter = SystemCounterDescriptor.valueOf(counterName);
         Map<SystemCounterDescriptor, CounterValue> counters = snapshot.getCounters();
         return counters.get(counter);
     }
 
+
+    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Cnc file is not found or not supported")
+    public static class CncFileException extends RuntimeException {
+        // empty
+    }
 
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No such Stream")
     public static class StreamNotFoundException extends RuntimeException {

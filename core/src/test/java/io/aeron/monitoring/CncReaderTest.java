@@ -59,7 +59,7 @@ class CncReaderTest {
             await().untilAsserted(() -> verifySnapshot(reader, publication, subscription));
 
 
-            CncSnapshot snapshot = reader.read();
+            CncSnapshot snapshot = reader.read().get();
             StreamInfo streamInfo = findStreamInfo(snapshot);
             SessionInfo sessionInfo =
                     streamInfo.findSession(publication.sessionId()).orElseThrow(AssertionError::new);
@@ -70,7 +70,7 @@ class CncReaderTest {
     }
 
     private void verifySnapshot(CncReader reader, Publication publication, Subscription subscription) {
-        CncSnapshot snapshot = reader.read();
+        CncSnapshot snapshot = reader.read().get();
 
         assertThat(publication.position())
                 .isLessThanOrEqualTo(snapshot.getCounters().get(BYTES_SENT).getValue());

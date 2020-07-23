@@ -5,6 +5,7 @@ import io.aeron.CommonContext;
 import io.aeron.driver.status.SystemCounterDescriptor;
 import io.aeron.monitoring.model.*;
 import io.aeron.monitoring.parser.LabelParser;
+import lombok.extern.slf4j.Slf4j;
 import org.agrona.DirectBuffer;
 import org.agrona.concurrent.status.CountersReader;
 
@@ -26,18 +27,13 @@ import static io.aeron.driver.status.SubscriberPos.SUBSCRIBER_POSITION_TYPE_ID;
 import static io.aeron.driver.status.SystemCounterDescriptor.SYSTEM_COUNTER_TYPE_ID;
 import static io.aeron.status.LocalSocketAddressStatus.LOCAL_SOCKET_ADDRESS_STATUS_TYPE_ID;
 
+@Slf4j
 class CounterParser implements CountersReader.MetaData {
 
     final Map<SystemCounterDescriptor, CounterValue> counterValues =
             new EnumMap<>(SystemCounterDescriptor.class);
     final Map<StreamKey, StreamInfo> channels = new TreeMap<>(Comparator.comparing(StreamKey::getEndpoint));
     final CountersReader counters;
-    final Set<Integer> ignored = new HashSet(Arrays.asList(
-            CLIENT_HEARTBEAT_TYPE_ID,
-            SEND_CHANNEL_STATUS_TYPE_ID,
-            RECEIVE_CHANNEL_STATUS_TYPE_ID,
-            LOCAL_SOCKET_ADDRESS_STATUS_TYPE_ID
-    ));
 
     public CounterParser(CountersReader counters) {
         this.counters = counters;
@@ -50,122 +46,124 @@ class CounterParser implements CountersReader.MetaData {
             DirectBuffer keyBuffer,
             String label) {
 
-        long value = counters.getCounterValue(counterId);
+        try {
 
-        if (typeId == SYSTEM_COUNTER_TYPE_ID) {
-            SystemCounterDescriptor descriptor = SystemCounterDescriptor.get(counterId);
-            counterValues.put(descriptor, new CounterValue(typeId, label, value));
-            return;
-        }
+            long value = counters.getCounterValue(counterId);
 
-        if (ignored.contains(typeId)) {
-            return;
-        }
+            if (typeId == SYSTEM_COUNTER_TYPE_ID) {
+                SystemCounterDescriptor descriptor = SystemCounterDescriptor.get(counterId);
+                counterValues.put(descriptor, new CounterValue(typeId, label, value));
+                return;
+            }
 
-        StreamKey key = extractStreamKeyFromLabel(label);
-        StreamInfo streamInfo = channels.computeIfAbsent(key, k -> new StreamInfo());
-        switch (typeId) {
-            case SENDER_POSITION_TYPE_ID:
-                LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
-                    SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
-                    SenderInfo sender = sessionInfo.createIfAbsentSender(
-                            name,
-                            registrationId,
-                            sessionId,
-                            streamId,
-                            channel);
-                    sender.setPosition(value);
-                });
-                break;
-            case SENDER_LIMIT_TYPE_ID:
-                LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
-                    SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
-                    SenderInfo sender = sessionInfo.createIfAbsentSender(
-                            name,
-                            registrationId,
-                            sessionId,
-                            streamId,
-                            channel);
-                    lookupSession(streamInfo, sessionId).getSender().setLimit(value);
-                });
-                break;
-            case SENDER_BPE_TYPE_ID:
-                LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
-                    SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
-                    SenderInfo sender = sessionInfo.createIfAbsentSender(
-                            name,
-                            registrationId,
-                            sessionId,
-                            streamId,
-                            channel);
-                    sender.setBackpressure(value);
-                });
-                break;
+
+            StreamKey key = extractStreamKeyFromLabel(label);
+            StreamInfo streamInfo = channels.computeIfAbsent(key, k -> new StreamInfo());
+            switch (typeId) {
+                case SENDER_POSITION_TYPE_ID:
+                    LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
+                        SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
+                        SenderInfo sender = sessionInfo.createIfAbsentSender(
+                                name,
+                                registrationId,
+                                sessionId,
+                                streamId,
+                                channel);
+                        sender.setPosition(value);
+                    });
+                    break;
+                case SENDER_LIMIT_TYPE_ID:
+                    LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
+                        SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
+                        SenderInfo sender = sessionInfo.createIfAbsentSender(
+                                name,
+                                registrationId,
+                                sessionId,
+                                streamId,
+                                channel);
+                        lookupSession(streamInfo, sessionId).getSender().setLimit(value);
+                    });
+                    break;
+                case SENDER_BPE_TYPE_ID:
+                    LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
+                        SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
+                        SenderInfo sender = sessionInfo.createIfAbsentSender(
+                                name,
+                                registrationId,
+                                sessionId,
+                                streamId,
+                                channel);
+                        sender.setBackpressure(value);
+                    });
+                    break;
 //            case SEND_CHANNEL_STATUS_TYPE_ID:
 //                SendChannelStatus.parseLabel(label, streamInfo::acceptSendChannelStatus);
 //                streamInfo.getSender().setStatus(value == 1);
 //                break;
-            case RECEIVER_POS_TYPE_ID:
-                LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
-                    SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
-                    ReceiverInfo receiver = sessionInfo.createIfAbsentReceiver(
-                            name,
-                            registrationId,
-                            sessionId,
-                            streamId,
-                            channel);
-                    receiver.setPosition(value);
-                });
-                break;
-            case RECEIVER_HWM_TYPE_ID:
-                LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
-                    SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
-                    ReceiverInfo receiver = sessionInfo.createIfAbsentReceiver(
-                            name,
-                            registrationId,
-                            sessionId,
-                            streamId,
-                            channel);
-                    receiver.setHighWaterMark(value);
-                });
-                break;
+                case RECEIVER_POS_TYPE_ID:
+                    LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
+                        SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
+                        ReceiverInfo receiver = sessionInfo.createIfAbsentReceiver(
+                                name,
+                                registrationId,
+                                sessionId,
+                                streamId,
+                                channel);
+                        receiver.setPosition(value);
+                    });
+                    break;
+                case RECEIVER_HWM_TYPE_ID:
+                    LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
+                        SessionInfo sessionInfo = lookupSession(streamInfo, sessionId);
+                        ReceiverInfo receiver = sessionInfo.createIfAbsentReceiver(
+                                name,
+                                registrationId,
+                                sessionId,
+                                streamId,
+                                channel);
+                        receiver.setHighWaterMark(value);
+                    });
+                    break;
 //            case RECEIVE_CHANNEL_STATUS_TYPE_ID:
 //                ReceiveChannelStatus.parseLabel(label, streamInfo::acceptReceiveChannelStatus);
 //                streamInfo.getReceiver().setStatus(value == 1);
 //                break;
-            case PUBLISHER_POS_TYPE_ID:
-                LabelParser.parsePublisherPosLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
-                    PublisherInfo publisherInfo =
-                            lookupSession(streamInfo, sessionId).createIfAbsentPublisher(
-                                    registrationId,
-                                    streamId,
-                                    channel);
-                    publisherInfo.setPosition(value);
-                });
-                break;
-            case PUBLISHER_LIMIT_TYPE_ID:
-                LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
-                    PublisherInfo publisherInfo =
-                            lookupSession(streamInfo, sessionId).createIfAbsentPublisher(
-                                    registrationId,
-                                    streamId,
-                                    channel);
-                    publisherInfo.setLimit(value);
-                });
-                break;
-            case SUBSCRIBER_POSITION_TYPE_ID:
-                LabelParser.parseSubscriberPosLabel(
-                        label,
-                        (name, registrationId, sessionId, streamId, channel, joinPosition) -> {
-                            SubscriberInfo subscriberInfo = lookupSession(streamInfo, sessionId)
-                                    .createIfAbsentSubscriber(
-                                            registrationId,
-                                            streamId,
-                                            channel,
-                                            joinPosition);
-                            subscriberInfo.setPosition(value);
-                        });
-                break;
+                case PUBLISHER_POS_TYPE_ID:
+                    LabelParser.parsePublisherPosLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
+                        PublisherInfo publisherInfo =
+                                lookupSession(streamInfo, sessionId).createIfAbsentPublisher(
+                                        registrationId,
+                                        streamId,
+                                        channel);
+                        publisherInfo.setPosition(value);
+                    });
+                    break;
+                case PUBLISHER_LIMIT_TYPE_ID:
+                    LabelParser.parseStandardLabel(label, (name, registrationId, sessionId, streamId, channel) -> {
+                        PublisherInfo publisherInfo =
+                                lookupSession(streamInfo, sessionId).createIfAbsentPublisher(
+                                        registrationId,
+                                        streamId,
+                                        channel);
+                        publisherInfo.setLimit(value);
+                    });
+                    break;
+                case SUBSCRIBER_POSITION_TYPE_ID:
+                    LabelParser.parseSubscriberPosLabel(
+                            label,
+                            (name, registrationId, sessionId, streamId, channel, joinPosition) -> {
+                                SubscriberInfo subscriberInfo = lookupSession(streamInfo, sessionId)
+                                        .createIfAbsentSubscriber(
+                                                registrationId,
+                                                streamId,
+                                                channel,
+                                                joinPosition);
+                                subscriberInfo.setPosition(value);
+                            });
+                    break;
+            }
+        } catch (Exception e) {
+            log.warn("skip label: " + label + " \nreason: " + e.getMessage());
         }
     }
 
@@ -177,7 +175,7 @@ class CounterParser implements CountersReader.MetaData {
         Pattern pattern = Pattern.compile("(\\d+) +(aeron:\\P{Blank}+).*$");
         Matcher matcher = pattern.matcher(label);
         if (!matcher.find()) {
-            throw new IllegalStateException("bad label: " + label);
+            throw new IllegalStateException("can not extract stream id and uri");
         }
 
         String uri = matcher.group(2);
