@@ -6,23 +6,26 @@ apply plugin: 'java'
 apply plugin: 'io.spring.dependency-management'
 
 dependencies {
-    implementation project (':core')
-    implementation 'org.springframework.boot:spring-boot-starter'
-    implementation('org.springframework.boot:spring-boot-starter-web') {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    implementation project(":core")
+    implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-web") {
+        exclude group: "org.springframework.boot", module: "spring-boot-starter-tomcat"
     }
-    implementation 'org.springframework.boot:spring-boot-starter-jetty'
-//    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-//    implementation 'org.springframework.boot:spring-boot-devtools'
-    implementation 'io.springfox:springfox-swagger2:2.9.2'
-    implementation 'io.springfox:springfox-swagger-ui:2.9.2'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation("org.springframework.boot:spring-boot-starter-jetty")
+    implementation("org.springdoc:springdoc-openapi-ui:1.4.3")
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude group: "org.junit.vintage", module: "junit-vintage-engine"
+    }
 }
 
 bootJar {
     archiveBaseName = rootProject.name
-    archiveVersion = artifact_version
+    archiveVersion = project.version
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
     }
+}
+
+processResources {
+    expand(project.properties)
 }

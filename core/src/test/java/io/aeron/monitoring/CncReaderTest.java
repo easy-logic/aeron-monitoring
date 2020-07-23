@@ -77,8 +77,8 @@ class CncReaderTest {
 
         assertEquals(
                 1,
-                snapshot.getEndpoints().size(),
-                "must be only 1getHighWaterMark channel\n" + snapshot.getEndpoints().keySet() + "\n");
+                snapshot.getStreams().size(),
+                "must be only 1getHighWaterMark channel\n" + snapshot.getStreams().keySet() + "\n");
 
         StreamInfo streamInfo = findStreamInfo(snapshot);
         assertNotNull(streamInfo);
@@ -129,7 +129,7 @@ class CncReaderTest {
     private StreamInfo findStreamInfo(CncSnapshot snapshot) {
         String endpoint = ChannelUri.parse(CHANNEL).get(CommonContext.ENDPOINT_PARAM_NAME);
         StreamKey key = new StreamKey(endpoint, STREAM_ID);
-        return snapshot.getEndpoints().get(key);
+        return snapshot.getStreams().get(key);
     }
 
     private String assertionMessage(CncSnapshot snapshot) {

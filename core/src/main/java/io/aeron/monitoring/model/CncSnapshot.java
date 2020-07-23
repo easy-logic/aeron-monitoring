@@ -17,6 +17,6 @@ public class CncSnapshot {
     private final int version;
     private final int maxCounterId;
     private final Map<SystemCounterDescriptor, CounterValue> counters;
-    private final Map<StreamKey, StreamInfo> endpoints;
+    private final Map<StreamKey, StreamInfo> streams;
 
 }

@@ -6,8 +6,9 @@ allprojects {
 subprojects {
     buildscript {
         ext {
-            aeronVersion = '1.29.0'
-            junitVersion = '5.6.2'
+            aeronVersion = "1.29.0"
+            junitVersion = "5.6.2"
+            swaggerVersion = "2.10.5"
         }
         repositories {
             mavenCentral()
@@ -18,9 +19,9 @@ subprojects {
         }
     }
 
-    apply plugin: 'java'
-    apply plugin: 'idea'
-    apply plugin: 'maven-publish'
+    apply plugin: "java"
+    apply plugin: "idea"
+    apply plugin: "maven-publish"
 
     test {
         useJUnitPlatform()
@@ -34,4 +35,4 @@ subprojects {
     }
 }
 
-defaultTasks 'clean', 'build'
+defaultTasks "clean", "build"
