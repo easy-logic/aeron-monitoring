@@ -23,12 +23,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration(initializers = CncSnapshotControllerTest.MediaDriverPathInitializer.class)
 public class CncSnapshotControllerTest {
 
-    private static MediaDriver.Context context;
     private static MediaDriver mediaDriver;
 
     @BeforeAll
     public static void startMediaDriver() {
-        context = new MediaDriver.Context();
+        MediaDriver.Context context = new MediaDriver.Context();
         context.threadingMode(ThreadingMode.SHARED);
         context.sharedIdleStrategy(new SleepingMillisIdleStrategy(1));
         context.dirDeleteOnShutdown(true);
@@ -50,7 +49,6 @@ public class CncSnapshotControllerTest {
     @AfterAll
     public static void stopMediaDriver() {
         mediaDriver.close();
-        context.deleteAeronDirectory();
     }
 
 

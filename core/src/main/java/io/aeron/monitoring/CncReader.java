@@ -3,7 +3,7 @@ package io.aeron.monitoring;
 import io.aeron.CncFileDescriptor;
 import io.aeron.CommonContext;
 import io.aeron.monitoring.model.CncSnapshot;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.agrona.DirectBuffer;
 import org.agrona.IoUtil;
 import org.agrona.concurrent.status.CountersReader;
@@ -16,7 +16,7 @@ import java.util.Optional;
 
 import static io.aeron.CncFileDescriptor.*;
 
-@Slf4j
+@Log4j2
 public class CncReader {
     private final File cncFile;
 

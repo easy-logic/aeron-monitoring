@@ -15,13 +15,14 @@ import org.junit.jupiter.api.Test;
 import static io.aeron.driver.status.SystemCounterDescriptor.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CncReaderOnePubOneSubTest {
     public static final String CHANNEL = "aeron:udp?endpoint=localhost:1234";
     public static final int STREAM_ID = 123;
     public static final int MESSAGE_SIZE = 100;
+    public static final String PUB_ALIAS = "pub";
+    public static final String SUB_ALIAS = "sub";
 
     private final IdleStrategy idleStrategy = new SleepingMillisIdleStrategy(1);
 
@@ -29,8 +30,8 @@ class CncReaderOnePubOneSubTest {
     void shouldReadOnePublisherOneSubscriber() {
         try (MediaDriver mediaDriver = MediaDriver.launchEmbedded(new MediaDriver.Context().dirDeleteOnShutdown(false));
              Aeron aeron = Aeron.connect(new Aeron.Context().aeronDirectoryName(mediaDriver.aeronDirectoryName()));
-             Publication publication = aeron.addPublication(CHANNEL + "|alias=pub", STREAM_ID);
-             Subscription subscription = aeron.addSubscription(CHANNEL + "|alias=sub", STREAM_ID)) {
+             Publication publication = aeron.addPublication(CHANNEL + "|alias=" + PUB_ALIAS, STREAM_ID);
+             Subscription subscription = aeron.addSubscription(CHANNEL + "|alias=" + SUB_ALIAS, STREAM_ID)) {
             CncReader reader = new CncReader(mediaDriver.aeronDirectoryName());
 
             await().untilAsserted(() -> verifySnapshot(reader, publication, subscription));
@@ -59,7 +60,7 @@ class CncReaderOnePubOneSubTest {
             await().untilAsserted(() -> verifySnapshot(reader, publication, subscription));
 
 
-            CncSnapshot snapshot = reader.read().get();
+            CncSnapshot snapshot = reader.read().orElseThrow(AssertionError::new);
             StreamInfo streamInfo = findStreamInfo(snapshot);
             SessionInfo sessionInfo =
                     streamInfo.findSession(publication.sessionId()).orElseThrow(AssertionError::new);
@@ -70,7 +71,7 @@ class CncReaderOnePubOneSubTest {
     }
 
     private void verifySnapshot(CncReader reader, Publication publication, Subscription subscription) {
-        CncSnapshot snapshot = reader.read().get();
+        CncSnapshot snapshot = reader.read().orElseThrow(IllegalStateException::new);
 
         assertThat(publication.position())
                 .isLessThanOrEqualTo(snapshot.getCounters().get(BYTES_SENT).getValue());
@@ -78,10 +79,12 @@ class CncReaderOnePubOneSubTest {
         assertEquals(
                 1,
                 snapshot.getStreams().size(),
-                "must be only 1getHighWaterMark channel\n" + snapshot.getStreams().keySet() + "\n");
+                "must be only 1 channel\n" + snapshot.getStreams().keySet() + "\n");
 
         StreamInfo streamInfo = findStreamInfo(snapshot);
         assertNotNull(streamInfo);
+        assertTrue(streamInfo.getAliases().contains(PUB_ALIAS));
+        assertTrue(streamInfo.getAliases().contains(SUB_ALIAS));
 
 
         if (!subscription.hasNoImages()) {
